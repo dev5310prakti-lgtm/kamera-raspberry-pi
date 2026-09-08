@@ -1,0 +1,83 @@
+<!DOCTYPE html> <html lang="de"> <head> <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Raspberry Pi Camera</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head> <body>
+<!-- Kopfbereich -->
+<header class="header">
+
+    <div class="logo">
+        📷 Raspberry Pi Camera
+    </div>
+
+    <div class="status">
+        <span class="status-punkt"></span>
+        ONLINE
+    </div>
+
+</header>
+
+
+<!-- Hauptbereich -->
+<main class="main">
+
+    <h1>Kameraansicht</h1>
+
+    <p class="beschreibung">
+        Live-Kamera des Raspberry Pi 5
+    </p>
+
+
+    <!-- Kamera -->
+    <div class="kamera-bereich">
+
+        <div class="kamera">
+
+<div class="kamera">
+    <img id="kameraBild"
+         src="{{ url_for('video_feed') }}"
+         alt="Live-Kamera">
+</div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Steuerung -->
+    <div class="steuerung">
+
+        <button class="zoom-button">
+            −
+        </button>
+
+        <div class="zoom-anzeige">
+            100%
+        </div>
+
+        <button class="zoom-button">
+            +
+        </button>
+
+    </div>
+
+</main>
+
+
+<!-- Fußbereich -->
+<footer class="footer">
+
+    <div>
+        Raspberry Pi 5
+    </div>
+
+    <div>
+        Kamera verbunden ✓
+    </div>
+
+</footer>
+
+</body> </html>
