@@ -1,6 +1,32 @@
-/* =========================
-   GRUNDEINSTELLUNGEN
-   ========================= */
+```css
+/* ============================================================
+   ELBE VISION
+   FUTURISTIC BLUE UI
+   ============================================================ */
+
+:root {
+    --bg: #020812;
+    --bg-soft: #06111f;
+    --panel: rgba(5, 17, 31, 0.82);
+    --panel-light: rgba(9, 28, 48, 0.72);
+
+    --blue: #00bfff;
+    --blue-bright: #26d9ff;
+    --blue-soft: rgba(0, 191, 255, 0.15);
+
+    --text: #e8f9ff;
+    --text-soft: #7894a8;
+    --border: rgba(0, 191, 255, 0.22);
+
+    --green: #00ffb3;
+
+    --radius: 16px;
+}
+
+
+/* ============================================================
+   RESET
+   ============================================================ */
 
 * {
     box-sizing: border-box;
@@ -8,386 +34,1366 @@
     padding: 0;
 }
 
+
+html,
 body {
-    font-family: Arial, Helvetica, sans-serif;
-    background: #111827;
-    color: white;
-    min-height: 100vh;
+    min-height: 100%;
 }
 
 
-/* =========================
-   KOPFBEREICH
-   ========================= */
+body {
+    background:
+        radial-gradient(
+            circle at 20% 20%,
+            rgba(0, 130, 255, 0.10),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 90% 80%,
+            rgba(0, 200, 255, 0.07),
+            transparent 35%
+        ),
+        var(--bg);
 
-.header {
-    height: 70px;
-    background: #1f2937;
+    color: var(--text);
+
+    font-family:
+        Inter,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+
+    overflow-x: hidden;
+}
+
+
+/* ============================================================
+   BACKGROUND GRID
+   ============================================================ */
+
+.background-grid {
+    position: fixed;
+    inset: 0;
+
+    pointer-events: none;
+
+    background-image:
+        linear-gradient(
+            rgba(0, 191, 255, 0.035) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(0, 191, 255, 0.035) 1px,
+            transparent 1px
+        );
+
+    background-size: 42px 42px;
+
+    mask-image:
+        linear-gradient(
+            to bottom,
+            black,
+            transparent 90%
+        );
+
+    z-index: -3;
+}
+
+
+/* ============================================================
+   GLOW
+   ============================================================ */
+
+.glow {
+    position: fixed;
+
+    width: 450px;
+    height: 450px;
+
+    border-radius: 50%;
+
+    background: var(--blue);
+
+    filter: blur(180px);
+
+    opacity: 0.08;
+
+    pointer-events: none;
+
+    z-index: -2;
+}
+
+
+.glow-1 {
+    top: -200px;
+    left: -150px;
+}
+
+
+.glow-2 {
+    right: -200px;
+    bottom: -200px;
+}
+
+
+/* ============================================================
+   TOPBAR
+   ============================================================ */
+
+.topbar {
+    height: 82px;
 
     display: flex;
     align-items: center;
     justify-content: space-between;
 
-    padding: 0 35px;
+    padding: 0 30px;
 
-    border-bottom: 1px solid #374151;
+    border-bottom: 1px solid var(--border);
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(4, 17, 31, 0.95),
+            rgba(2, 8, 18, 0.82)
+        );
+
+    backdrop-filter: blur(18px);
+
+    position: relative;
+    z-index: 10;
 }
 
-.logo {
-    font-size: 22px;
-    font-weight: bold;
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
 }
 
-.status {
+
+.brand-symbol {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--blue);
+
+    color: var(--blue-bright);
+
+    font-size: 24px;
+
+    box-shadow:
+        0 0 12px rgba(0, 191, 255, 0.4),
+        inset 0 0 14px rgba(0, 191, 255, 0.08);
+}
+
+
+.brand-title {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+}
+
+
+.brand-subtitle {
+    margin-top: 3px;
+
+    color: var(--text-soft);
+
+    font-size: 9px;
+    letter-spacing: 0.25em;
+}
+
+
+.top-status {
     display: flex;
     align-items: center;
     gap: 10px;
-
-    font-size: 14px;
-    font-weight: bold;
-    color: #22c55e;
 }
 
-.status-punkt {
-    width: 10px;
-    height: 10px;
 
-    background: #22c55e;
+.status-pill {
+    height: 34px;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 0 12px;
+
+    border: 1px solid var(--border);
+
+    background: rgba(0, 100, 170, 0.07);
+
+    color: #a8d9e9;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    letter-spacing: 0.1em;
+}
+
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+
     border-radius: 50%;
 
-    box-shadow: 0 0 10px #22c55e;
+    background: #536878;
+
+    box-shadow: 0 0 5px #536878;
 }
 
 
-/* =========================
-   HAUPTBEREICH
-   ========================= */
+.status-dot.online {
+    background: var(--green);
 
-.main {
-    max-width: 1200px;
-    margin: 0 auto;
+    box-shadow:
+        0 0 7px var(--green),
+        0 0 14px rgba(0, 255, 179, 0.45);
 
-    padding: 45px 25px;
+    animation: pulse 1.8s infinite;
+}
+
+
+.clock {
+    color: var(--blue-bright);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 14px;
+
+    letter-spacing: 0.08em;
+
+    min-width: 72px;
+
+    text-align: right;
+}
+
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+
+.dashboard {
+    width: min(
+        1700px,
+        calc(100% - 40px)
+    );
+
+    margin: 24px auto;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        390px;
+
+    gap: 20px;
+}
+
+
+/* ============================================================
+   PANELS
+   ============================================================ */
+
+.camera-panel,
+.ais-panel {
+    border: 1px solid var(--border);
+
+    background: var(--panel);
+
+    backdrop-filter: blur(20px);
+
+    border-radius: var(--radius);
+
+    box-shadow:
+        0 0 30px rgba(0, 110, 190, 0.08),
+        inset 0 0 30px rgba(0, 160, 255, 0.025);
+
+    overflow: hidden;
+}
+
+
+.panel-header,
+.ais-header {
+    height: 72px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 20px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+
+.panel-label {
+    color: var(--blue);
+
+    font-size: 9px;
+    font-weight: 800;
+
+    letter-spacing: 0.25em;
+}
+
+
+.panel-title {
+    margin-top: 4px;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    letter-spacing: 0.08em;
+}
+
+
+/* ============================================================
+   LIVE
+   ============================================================ */
+
+.live-indicator,
+.ais-live {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    color: var(--green);
+
+    font-size: 10px;
+    font-weight: 800;
+
+    letter-spacing: 0.15em;
+}
+
+
+.live-indicator span {
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: var(--green);
+
+    box-shadow:
+        0 0 8px var(--green);
+}
+
+
+.ais-live {
+    color: #687b8a;
+}
+
+
+.ais-live.online {
+    color: var(--green);
+
+    text-shadow:
+        0 0 10px rgba(0, 255, 179, 0.35);
+}
+
+
+/* ============================================================
+   CAMERA
+   ============================================================ */
+
+.camera-container {
+    position: relative;
+
+    aspect-ratio: 16 / 9;
+
+    background: #000;
+
+    overflow: hidden;
+}
+
+
+.camera-container img {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: contain;
+
+    background: #000;
+}
+
+
+/* ============================================================
+   SCANLINE
+   ============================================================ */
+
+.scanline {
+    position: absolute;
+
+    left: 0;
+    right: 0;
+
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(0, 200, 255, 0.5),
+            transparent
+        );
+
+    box-shadow:
+        0 0 12px rgba(0, 191, 255, 0.5);
+
+    animation:
+        scan 5s linear infinite;
+
+    pointer-events: none;
+}
+
+
+@keyframes scan {
+
+    0% {
+        top: 0;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 0.8;
+    }
+
+    90% {
+        opacity: 0.8;
+    }
+
+    100% {
+        top: 100%;
+        opacity: 0;
+    }
+}
+
+
+/* ============================================================
+   CAMERA CORNERS
+   ============================================================ */
+
+.camera-corner {
+    position: absolute;
+
+    width: 24px;
+    height: 24px;
+
+    border-color: rgba(0, 210, 255, 0.8);
+
+    pointer-events: none;
+}
+
+
+.top-left {
+    top: 14px;
+    left: 14px;
+
+    border-top: 2px solid;
+    border-left: 2px solid;
+}
+
+
+.top-right {
+    top: 14px;
+    right: 14px;
+
+    border-top: 2px solid;
+    border-right: 2px solid;
+}
+
+
+.bottom-left {
+    bottom: 14px;
+    left: 14px;
+
+    border-bottom: 2px solid;
+    border-left: 2px solid;
+}
+
+
+.bottom-right {
+    bottom: 14px;
+    right: 14px;
+
+    border-bottom: 2px solid;
+    border-right: 2px solid;
+}
+
+
+/* ============================================================
+   CAMERA INFO
+   ============================================================ */
+
+.camera-info {
+    position: absolute;
+
+    left: 20px;
+    top: 18px;
+
+    display: flex;
+    gap: 12px;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 9px;
+
+    color: rgba(225, 250, 255, 0.8);
+
+    letter-spacing: 0.08em;
+
+    text-shadow:
+        0 0 8px rgba(0, 191, 255, 0.8);
+}
+
+
+/* ============================================================
+   CAMERA CONTROLS
+   ============================================================ */
+
+.camera-controls {
+    position: absolute;
+
+    left: 20px;
+    bottom: 20px;
+
+    display: flex;
+    align-items: center;
+
+    border: 1px solid rgba(0, 191, 255, 0.35);
+
+    background:
+        rgba(2, 12, 22, 0.82);
+
+    backdrop-filter: blur(10px);
+}
+
+
+.camera-controls button {
+    width: 38px;
+    height: 38px;
+
+    border: 0;
+
+    background: transparent;
+
+    color: var(--blue-bright);
+
+    font-size: 20px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s,
+        box-shadow 0.2s;
+}
+
+
+.camera-controls button:hover {
+    background: var(--blue-soft);
+
+    box-shadow:
+        inset 0 0 12px rgba(0, 191, 255, 0.15);
+}
+
+
+.zoom-value {
+    min-width: 52px;
+
+    text-align: center;
+
+    color: white;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 11px;
+}
+
+
+/* ============================================================
+   DIRECTION CONTROLS
+   ============================================================ */
+
+.direction-controls {
+    position: absolute;
+
+    right: 20px;
+    bottom: 20px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+
+.direction-controls div {
+    display: flex;
+    gap: 4px;
+}
+
+
+.direction-controls button,
+.fullscreen-button {
+    width: 34px;
+    height: 34px;
+
+    border: 1px solid rgba(0, 191, 255, 0.35);
+
+    background:
+        rgba(2, 12, 22, 0.85);
+
+    color: var(--blue-bright);
+
+    cursor: pointer;
+
+    backdrop-filter: blur(8px);
+
+    transition:
+        background 0.2s,
+        box-shadow 0.2s,
+        transform 0.2s;
+}
+
+
+.direction-controls button:hover,
+.fullscreen-button:hover {
+    background: rgba(0, 150, 220, 0.18);
+
+    box-shadow:
+        0 0 12px rgba(0, 191, 255, 0.2);
+
+    transform: translateY(-1px);
+}
+
+
+/* ============================================================
+   FULLSCREEN
+   ============================================================ */
+
+.fullscreen-button {
+    position: absolute;
+
+    right: 20px;
+    top: 20px;
+
+    font-size: 19px;
+}
+
+
+.camera-container:fullscreen {
+    width: 100vw;
+    height: 100vh;
+
+    aspect-ratio: auto;
+
+    background: #000;
+}
+
+
+.camera-container:fullscreen img {
+    object-fit: contain;
+}
+
+
+/* ============================================================
+   CAMERA FOOTER
+   ============================================================ */
+
+.camera-footer {
+    min-height: 58px;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    border-top: 1px solid var(--border);
+}
+
+
+.camera-stat {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    padding: 0 18px;
+
+    border-right: 1px solid var(--border);
+}
+
+
+.camera-stat:last-child {
+    border-right: 0;
+}
+
+
+.stat-label {
+    color: var(--text-soft);
+
+    font-size: 8px;
+
+    letter-spacing: 0.2em;
+}
+
+
+.stat-value {
+    margin-top: 4px;
+
+    color: #cbeefa;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 10px;
+}
+
+
+/* ============================================================
+   AIS PANEL
+   ============================================================ */
+
+.ais-panel {
+    display: flex;
+    flex-direction: column;
+
+    min-height: 0;
+}
+
+
+.ais-header {
+    flex-shrink: 0;
+}
+
+
+/* ============================================================
+   AIS STATS
+   ============================================================ */
+
+.ais-stats {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 7px;
+
+    padding: 12px;
+}
+
+
+.ais-stat-box {
+    padding: 11px 7px;
+
+    text-align: center;
+
+    border: 1px solid rgba(0, 191, 255, 0.16);
+
+    background:
+        rgba(0, 120, 190, 0.045);
+}
+
+
+.ais-stat-number {
+    display: block;
+
+    color: var(--blue-bright);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 19px;
+    font-weight: 700;
+
+    text-shadow:
+        0 0 12px rgba(0, 191, 255, 0.35);
+}
+
+
+.ais-stat-label {
+    display: block;
+
+    margin-top: 3px;
+
+    color: var(--text-soft);
+
+    font-size: 7px;
+    font-weight: 700;
+
+    letter-spacing: 0.15em;
+}
+
+
+/* ============================================================
+   SHIP LIST
+   ============================================================ */
+
+.ship-list {
+    flex: 1;
+
+    min-height: 300px;
+
+    overflow-y: auto;
+
+    padding: 0 12px 12px;
+}
+
+
+/* Scrollbar */
+
+.ship-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+
+.ship-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.15);
+}
+
+
+.ship-list::-webkit-scrollbar-thumb {
+    background: rgba(0, 191, 255, 0.3);
+
+    border-radius: 10px;
+}
+
+
+/* ============================================================
+   SHIP CARD
+   ============================================================ */
+
+.ship-card {
+    position: relative;
+
+    margin-bottom: 8px;
+
+    padding: 13px;
+
+    border: 1px solid rgba(0, 191, 255, 0.17);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(0, 100, 170, 0.08),
+            rgba(0, 30, 55, 0.18)
+        );
+
+    transition:
+        border-color 0.2s,
+        background 0.2s,
+        transform 0.2s;
+}
+
+
+.ship-card:hover {
+    border-color:
+        rgba(0, 191, 255, 0.45);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(0, 140, 210, 0.12),
+            rgba(0, 40, 70, 0.25)
+        );
+
+    transform: translateX(-2px);
+}
+
+
+.ship-moving {
+    box-shadow:
+        inset 2px 0 0 var(--blue);
+}
+
+
+.ship-stopped {
+    box-shadow:
+        inset 2px 0 0 #455866;
+}
+
+
+/* ============================================================
+   SHIP TOP
+   ============================================================ */
+
+.ship-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+}
+
+
+.ship-name {
+    min-width: 0;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    color: #e8fbff;
+
+    font-size: 12px;
+    font-weight: 750;
+
+    letter-spacing: 0.03em;
+}
+
+
+.ship-icon {
+    color: var(--blue-bright);
+
+    margin-right: 5px;
+
+    font-size: 9px;
+
+    text-shadow:
+        0 0 8px rgba(0, 191, 255, 0.8);
+}
+
+
+.ship-stopped .ship-icon {
+    color: #667b89;
+
+    text-shadow: none;
+}
+
+
+.ship-state {
+    flex-shrink: 0;
+
+    font-size: 7px;
+    font-weight: 800;
+
+    letter-spacing: 0.12em;
+}
+
+
+.ship-state.moving {
+    color: var(--green);
+}
+
+
+.ship-state.stopped {
+    color: #667b89;
+}
+
+
+/* ============================================================
+   MMSI
+   ============================================================ */
+
+.ship-mmsi {
+    margin-top: 5px;
+
+    color: #536d7e;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 8px;
+
+    letter-spacing: 0.04em;
+}
+
+
+.ship-mmsi span {
+    color: #7899aa;
+}
+
+
+/* ============================================================
+   SHIP DATA
+   ============================================================ */
+
+.ship-data-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    margin-top: 12px;
+
+    border-top: 1px solid rgba(0, 191, 255, 0.10);
+    border-bottom: 1px solid rgba(0, 191, 255, 0.10);
+}
+
+
+.ship-data {
+    min-width: 0;
+
+    padding: 8px 5px;
+
+    border-right: 1px solid rgba(0, 191, 255, 0.08);
 
     text-align: center;
 }
 
-.main h1 {
-    font-size: 32px;
-    margin-bottom: 10px;
-}
 
-.beschreibung {
-    color: #9ca3af;
-    font-size: 16px;
-    margin-bottom: 30px;
+.ship-data:last-child {
+    border-right: 0;
 }
 
 
-/* =========================
-   KAMERA
-   ========================= */
-
-.kamera-bereich {
-    width: 100%;
-
-    display: flex;
-    justify-content: center;
-}
-
-.kamera {
-    width: 100%;
-    max-width: 1000px;
-
-    background: black;
-
-    border-radius: 15px;
-    overflow: hidden;
-
-    border: 2px solid #374151;
-
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-}
-
-.kamera img {
+.ship-data span {
     display: block;
 
-    width: 100%;
-    height: auto;
+    color: #536d7e;
 
-    background: black;
+    font-size: 7px;
+
+    letter-spacing: 0.08em;
 }
 
 
-/* =========================
-   ZOOM-STEUERUNG
-   ========================= */
+.ship-data strong {
+    display: block;
 
-.steuerung {
-    display: flex;
+    margin-top: 3px;
 
-    justify-content: center;
-    align-items: center;
+    color: #c9f5ff;
 
-    gap: 25px;
+    font-family:
+        "Courier New",
+        monospace;
 
-    margin-top: 30px;
-}
-
-.zoom-button {
-    width: 55px;
-    height: 55px;
-
-    border: none;
-    border-radius: 12px;
-
-    background: #374151;
-    color: white;
-
-    font-size: 30px;
-    font-weight: bold;
-
-    cursor: pointer;
-
-    transition: 0.2s;
-}
-
-.zoom-button:hover {
-    background: #4b5563;
-
-    transform: scale(1.05);
-}
-
-.zoom-button:active {
-    transform: scale(0.95);
-}
-
-.zoom-anzeige {
-    min-width: 90px;
-
-    font-size: 20px;
-    font-weight: bold;
-
-    background: #1f2937;
-
-    padding: 14px 20px;
-
-    border-radius: 10px;
-
-    border: 1px solid #374151;
+    font-size: 12px;
 }
 
 
-/* =========================
-   HINWEIS
-   ========================= */
+.ship-data strong small {
+    color: #6d8998;
 
-.zoom-hinweis {
-    margin-top: 18px;
-
-    color: #9ca3af;
-
-    font-size: 14px;
+    font-size: 7px;
 }
 
 
-/* =========================
-   FUSSZEILE
-   ========================= */
+.ship-data em {
+    display: block;
 
-.footer {
-    margin-top: 20px;
+    margin-top: 1px;
 
-    padding: 25px 35px;
+    color: #496878;
 
-    background: #1f2937;
+    font-size: 6px;
 
-    border-top: 1px solid #374151;
+    font-style: normal;
+}
 
+
+/* ============================================================
+   COORDINATES
+   ============================================================ */
+
+.ship-coordinates {
     display: flex;
     justify-content: space-between;
 
-    color: #9ca3af;
+    margin-top: 8px;
 
-    font-size: 14px;
+    color: #486575;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 7px;
 }
 
 
-/* =========================
-   MOBILE
-   ========================= */
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+
+.empty-state {
+    min-height: 220px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+
+    color: #587384;
+
+    font-size: 9px;
+
+    letter-spacing: 0.16em;
+
+    text-align: center;
+}
+
+
+.empty-state small {
+    color: #354e5e;
+
+    font-size: 7px;
+}
+
+
+.empty-icon {
+    color: var(--blue);
+
+    font-size: 28px;
+
+    text-shadow:
+        0 0 18px rgba(0, 191, 255, 0.5);
+
+    animation:
+        rotateIcon 3s linear infinite;
+}
+
+
+@keyframes rotateIcon {
+
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* ============================================================
+   AIS FOOTER
+   ============================================================ */
+
+.ais-footer {
+    flex-shrink: 0;
+
+    padding: 13px;
+
+    border-top: 1px solid var(--border);
+}
+
+
+.connection-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    color: #607b8b;
+
+    font-size: 8px;
+
+    letter-spacing: 0.13em;
+}
+
+
+.connection-dot {
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: #536878;
+}
+
+
+.connection-dot.online {
+    background: var(--green);
+
+    box-shadow:
+        0 0 7px var(--green);
+}
+
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.footer {
+    width: min(
+        1700px,
+        calc(100% - 40px)
+    );
+
+    margin: 0 auto 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    color: #3f5c6d;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 7px;
+
+    letter-spacing: 0.14em;
+}
+
+
+/* ============================================================
+   ANIMATION
+   ============================================================ */
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.45;
+    }
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1100px) {
+
+    .dashboard {
+        grid-template-columns: 1fr;
+    }
+
+
+    .ais-panel {
+        min-height: 500px;
+    }
+
+
+    .ship-list {
+        max-height: 500px;
+    }
+
+}
+
 
 @media (max-width: 700px) {
 
-    .header {
-        padding: 0 20px;
-    }
+    .topbar {
+        height: auto;
 
-    .logo {
-        font-size: 17px;
-    }
+        padding: 16px;
 
-    .main {
-        padding: 30px 15px;
-    }
-
-    .main h1 {
-        font-size: 26px;
-    }
-
-    .kamera {
-        border-radius: 10px;
-    }
-
-    .steuerung {
         gap: 15px;
-    }
-
-    .zoom-button {
-        width: 50px;
-        height: 50px;
-    }
-
-    .footer {
-        padding: 20px;
 
         flex-direction: column;
+        align-items: flex-start;
+    }
+
+
+    .top-status {
+        width: 100%;
+
+        overflow-x: auto;
+    }
+
+
+    .status-pill {
+        white-space: nowrap;
+    }
+
+
+    .clock {
+        margin-left: auto;
+    }
+
+
+    .dashboard {
+        width: calc(100% - 20px);
+
+        margin: 10px auto;
+    }
+
+
+    .camera-footer {
+        grid-template-columns: 1fr;
+    }
+
+
+    .camera-stat {
+        min-height: 45px;
+
+        border-right: 0;
+
+        border-bottom:
+            1px solid var(--border);
+    }
+
+
+    .camera-stat:last-child {
+        border-bottom: 0;
+    }
+
+
+    .ship-data-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+
+    .ship-data:nth-child(2) {
+        border-right: 0;
+    }
+
+
+    .ship-data:nth-child(1),
+    .ship-data:nth-child(2) {
+        border-bottom:
+            1px solid rgba(0, 191, 255, 0.08);
+    }
+
+
+    .footer {
+        width: calc(100% - 20px);
+
+        flex-direction: column;
+
         gap: 8px;
 
         text-align: center;
     }
+
 }
 
 
-/* =========================
-   FULLSCREEN
-   ========================= */
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
 
-.fullscreen-bereich {
-    margin-top: 15px;
-    text-align: center;
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
 }
-
-.fullscreen-button {
-    padding: 12px 22px;
-
-    border: none;
-    border-radius: 10px;
-
-    background: #374151;
-    color: white;
-
-    font-size: 15px;
-    font-weight: bold;
-
-    cursor: pointer;
-
-    transition: 0.2s;
-}
-
-.fullscreen-button:hover {
-    background: #4b5563;
-    transform: scale(1.03);
-}
-
-.fullscreen-button:active {
-    transform: scale(0.97);
-}
-
-
-/* Kamera im Vollbild */
-
-.kamera-bereich:fullscreen {
-    background: black;
-
-    width: 100vw;
-    height: 100vh;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.kamera-bereich:fullscreen .kamera {
-    max-width: 100%;
-    max-height: 100%;
-    border: none;
-    border-radius: 0;
-}
-
-.kamera-bereich:fullscreen img {
-    max-width: 100vw;
-    max-height: 100vh;
-
-    width: auto;
-    height: auto;
-}
-
-
-/* =========================
-   FULLSCREEN BUTTON
-   ========================= */
-
-.fullscreen-bereich {
-    display: flex;
-    justify-content: center;
-
-    margin-top: 15px;
-}
-
-.fullscreen-button {
-    padding: 12px 24px;
-
-    border: 1px solid #374151;
-    border-radius: 10px;
-
-    background: #1f2937;
-    color: white;
-
-    font-size: 15px;
-    font-weight: bold;
-
-    cursor: pointer;
-
-    transition: 0.2s;
-}
-
-.fullscreen-button:hover {
-    background: #374151;
-    transform: scale(1.05);
-}
-
-.fullscreen-button:active {
-    transform: scale(0.97);
-}
-
-
-/* =========================
-   KAMERA IM VOLLBILD
-   ========================= */
-
-.kamera-bereich:fullscreen {
-    width: 100vw;
-    height: 100vh;
-
-    background: black;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.kamera-bereich:fullscreen .kamera {
-    width: 100%;
-    max-width: none;
-
-    border: none;
-    border-radius: 0;
-}
-
-.kamera-bereich:fullscreen img {
-    width: 100%;
-    height: 100vh;
-
-    object-fit: contain;
-}
+```
