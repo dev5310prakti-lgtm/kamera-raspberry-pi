@@ -1,3 +1,4 @@
+
 from flask import Flask, render_template, Response, request, jsonify
 
 import cv2
@@ -16,28 +17,24 @@ from dotenv import load_dotenv
 # KONFIGURATION
 # ============================================================
 
-load_dotenv(
-    "/home/superuser/Downloads/projekt/.env"
-)
+load_dotenv("/home/superuser/Downloads/projekt/.env")
 
 AIS_API_KEY = os.getenv("AISSTREAM_API_KEY")
-
 AIS_URL = "wss://stream.aisstream.io/v0/stream"
 
 CAMERA_LAT = 53.544999
 CAMERA_LON = 9.9503613
 
-# Hamburg / Elbe
 AIS_BOUNDING_BOX = [
-    [
-        53.52,
-        9.88
-    ],
-    [
-        53.56,
-        10.00
-    ]
+    [53.5360, 9.9340],
+    [53.5540, 9.9667]
 ]
+
+CAMERA_DEVICE = "/dev/video0"
+CAMERA_WIDTH = 1280
+CAMERA_HEIGHT = 720
+CAMERA_FPS = 20
+JPEG_QUALITY = 78
 
 
 # ============================================================
@@ -52,7 +49,7 @@ app = Flask(__name__)
 # ============================================================
 
 kamera = cv2.VideoCapture(
-    "/dev/video0",
+    CAMERA_DEVICE,
     cv2.CAP_V4L2
 )
 
@@ -63,33 +60,216 @@ kamera.set(
 
 kamera.set(
     cv2.CAP_PROP_FRAME_WIDTH,
-    1280
+    CAMERA_WIDTH
 )
 
 kamera.set(
     cv2.CAP_PROP_FRAME_HEIGHT,
-    720
+    CAMERA_HEIGHT
 )
 
 kamera.set(
     cv2.CAP_PROP_FPS,
-    30
+    CAMERA_FPS
 )
 
+kamera.set(
+    cv2.CAP_PROP_BUFFERSIZE,
+    1
+)
+
+kamera_laeuft = True
+
+kamera_lock = threading.Lock()
+
+aktuelles_jpeg = None
+
+zoom = 1.0
+position_x = 0.5
+position_y = 0.5
+
 print(
-    "Kamera geöffnet:",
+    "Kamera geÃ¶ffnet:",
     kamera.isOpened()
 )
 
 
 # ============================================================
-# KAMERA ZOOM
+# KAMERA FRAME VERARBEITUNG
 # ============================================================
 
-zoom = 1.0
+def verarbeite_kamerabild(bild):
 
-position_x = 0.5
-position_y = 0.5
+    global zoom
+    global position_x
+    global position_y
+
+    with kamera_lock:
+        aktueller_zoom = zoom
+        aktuelles_x = position_x
+        aktuelles_y = position_y
+
+    hoehe, breite = bild.shape[:2]
+
+    if aktueller_zoom > 1.0:
+
+        ausschnitt_breite = int(
+            breite / aktueller_zoom
+        )
+
+        ausschnitt_hoehe = int(
+            hoehe / aktueller_zoom
+        )
+
+        ausschnitt_breite = max(
+            1,
+            min(ausschnitt_breite, breite)
+        )
+
+        ausschnitt_hoehe = max(
+            1,
+            min(ausschnitt_hoehe, hoehe)
+        )
+
+        max_x = breite - ausschnitt_breite
+        max_y = hoehe - ausschnitt_hoehe
+
+        x1 = int(
+            aktuelles_x * max_x
+        )
+
+        y1 = int(
+            aktuelles_y * max_y
+        )
+
+        x1 = max(
+            0,
+            min(x1, max_x)
+        )
+
+        y1 = max(
+            0,
+            min(y1, max_y)
+        )
+
+        x2 = x1 + ausschnitt_breite
+        y2 = y1 + ausschnitt_hoehe
+
+        bild = bild[
+            y1:y2,
+            x1:x2
+        ]
+
+        bild = cv2.resize(
+            bild,
+            (CAMERA_WIDTH, CAMERA_HEIGHT),
+            interpolation=cv2.INTER_LINEAR
+        )
+
+    return bild
+
+
+# ============================================================
+# KAMERA THREAD
+# ============================================================
+
+def kamera_thread():
+
+    global aktuelles_jpeg
+
+    print(
+        "Kamera-Thread gestartet."
+    )
+
+    while kamera_laeuft:
+
+        erfolg, bild = kamera.read()
+
+        if not erfolg:
+
+            print(
+                "Kein Kamerabild erhalten."
+            )
+
+            time.sleep(0.1)
+            continue
+
+        try:
+
+            bild = verarbeite_kamerabild(
+                bild
+            )
+
+            erfolg, buffer = cv2.imencode(
+                ".jpg",
+                bild,
+                [
+                    cv2.IMWRITE_JPEG_QUALITY,
+                    JPEG_QUALITY
+                ]
+            )
+
+            if not erfolg:
+                continue
+
+            jpeg = buffer.tobytes()
+
+            with kamera_lock:
+                aktuelles_jpeg = jpeg
+
+        except Exception as error:
+
+            print(
+                "Kamera-Verarbeitungsfehler:",
+                repr(error)
+            )
+
+            time.sleep(0.05)
+
+
+# ============================================================
+# KAMERA STREAM
+# ============================================================
+
+def kamera_stream():
+
+    while True:
+
+        with kamera_lock:
+            frame = aktuelles_jpeg
+
+        if frame is None:
+
+            time.sleep(0.01)
+            continue
+
+        yield (
+            b"--frame\r\n"
+            b"Content-Type: image/jpeg\r\n"
+            b"Content-Length: "
+            + str(len(frame)).encode()
+            + b"\r\n"
+            b"Cache-Control: no-cache\r\n"
+            b"Pragma: no-cache\r\n"
+            b"\r\n"
+            + frame
+            + b"\r\n"
+        )
+
+        time.sleep(0.01)
+
+
+# ============================================================
+# KAMERA THREAD STARTEN
+# ============================================================
+
+kamera_thread_handle = threading.Thread(
+    target=kamera_thread,
+    daemon=True,
+    name="CameraCapture"
+)
+
+kamera_thread_handle.start()
 
 
 # ============================================================
@@ -136,10 +316,8 @@ def berechne_entfernung(
         math.sin(dlat / 2) ** 2
         +
         math.cos(lat1)
-        *
-        math.cos(lat2)
-        *
-        math.sin(dlon / 2) ** 2
+        * math.cos(lat2)
+        * math.sin(dlon / 2) ** 2
     )
 
     c = 2 * math.atan2(
@@ -161,8 +339,8 @@ def berechne_richtung(
     lon2
 ):
 
-    lat1 = math.radians(lat1)
-    lat2 = math.radians(lat2)
+    lat1_rad = math.radians(lat1)
+    lat2_rad = math.radians(lat2)
 
     dlon = math.radians(
         lon2 - lon1
@@ -170,20 +348,16 @@ def berechne_richtung(
 
     x = (
         math.sin(dlon)
-        *
-        math.cos(lat2)
+        * math.cos(lat2_rad)
     )
 
     y = (
-        math.cos(lat1)
-        *
-        math.sin(lat2)
+        math.cos(lat1_rad)
+        * math.sin(lat2_rad)
         -
-        math.sin(lat1)
-        *
-        math.cos(lat2)
-        *
-        math.cos(dlon)
+        math.sin(lat1_rad)
+        * math.cos(lat2_rad)
+        * math.cos(dlon)
     )
 
     richtung = math.degrees(
@@ -201,11 +375,7 @@ def berechne_richtung(
 
 def verarbeite_ais_nachricht(data):
 
-    message_type = data.get(
-        "MessageType"
-    )
-
-    if message_type != "PositionReport":
+    if data.get("MessageType") != "PositionReport":
         return
 
     message = data.get(
@@ -260,10 +430,16 @@ def verarbeite_ais_nachricht(data):
             "Longitude"
         )
 
-    if latitude is None:
+    if latitude is None or longitude is None:
         return
 
-    if longitude is None:
+    try:
+
+        latitude = float(latitude)
+        longitude = float(longitude)
+
+    except Exception:
+
         return
 
     # --------------------------------------------------------
@@ -283,7 +459,7 @@ def verarbeite_ais_nachricht(data):
         name = f"MMSI {mmsi}"
 
     # --------------------------------------------------------
-    # GESCHWINDIGKEIT
+    # SPEED
     # --------------------------------------------------------
 
     speed = position.get(
@@ -292,15 +468,12 @@ def verarbeite_ais_nachricht(data):
     )
 
     try:
-
         speed = float(speed)
-
     except Exception:
-
         speed = 0.0
 
     # --------------------------------------------------------
-    # KURS
+    # COURSE
     # --------------------------------------------------------
 
     course = position.get(
@@ -310,11 +483,8 @@ def verarbeite_ais_nachricht(data):
     if course is not None:
 
         try:
-
             course = float(course)
-
         except Exception:
-
             course = None
 
     # --------------------------------------------------------
@@ -347,26 +517,15 @@ def verarbeite_ais_nachricht(data):
         schiffe[mmsi] = {
             "mmsi": mmsi,
             "name": name,
-
-            "latitude": float(
-                latitude
-            ),
-
-            "longitude": float(
-                longitude
-            ),
-
+            "latitude": latitude,
+            "longitude": longitude,
             "speed": speed,
-
             "speed_kmh": round(
                 speed * 1.852,
                 1
             ),
-
             "course": course,
-
             "heading": heading,
-
             "last_seen": time.time()
         }
 
@@ -390,12 +549,11 @@ async def ais_verbindung():
             "=========================================="
         )
         print(
-            "Erwartete Datei:"
+            "Bitte .env prÃ¼fen:"
         )
         print(
             "/home/superuser/Downloads/projekt/.env"
         )
-        print()
         print(
             "AISSTREAM_API_KEY=DEIN_KEY"
         )
@@ -404,9 +562,9 @@ async def ais_verbindung():
         )
         print()
 
-        ais_status[
-            "last_error"
-        ] = "API Key fehlt"
+        ais_status["last_error"] = (
+            "API Key fehlt"
+        )
 
         return
 
@@ -439,10 +597,6 @@ async def ais_verbindung():
                     "last_error"
                 ] = None
 
-                # ------------------------------------------------
-                # SUBSCRIPTION
-                # ------------------------------------------------
-
                 subscription = {
                     "APIKey": AIS_API_KEY,
 
@@ -465,10 +619,6 @@ async def ais_verbindung():
                     "AIS Subscription gesendet!"
                 )
 
-                # ------------------------------------------------
-                # DATEN EMPFANGEN
-                # ------------------------------------------------
-
                 async for raw_data in websocket:
 
                     try:
@@ -490,15 +640,23 @@ async def ais_verbindung():
                             "MessageType"
                         )
 
-                        if message_type == "SubscriptionConfirmation":
+                        if (
+                            message_type
+                            ==
+                            "SubscriptionConfirmation"
+                        ):
 
                             print(
-                                "AIS Subscription bestätigt!"
+                                "AIS Subscription bestÃ¤tigt!"
                             )
 
                             continue
 
-                        if message_type == "PositionReport":
+                        if (
+                            message_type
+                            ==
+                            "PositionReport"
+                        ):
 
                             verarbeite_ais_nachricht(
                                 data
@@ -585,110 +743,6 @@ def starte_ais():
 
 
 # ============================================================
-# KAMERA STREAM
-# ============================================================
-
-def kamera_stream():
-
-    global zoom
-    global position_x
-    global position_y
-
-    while True:
-
-        erfolg, bild = kamera.read()
-
-        if not erfolg:
-
-            print(
-                "Kein Kamerabild erhalten"
-            )
-
-            time.sleep(
-                0.1
-            )
-
-            continue
-
-        hoehe, breite = bild.shape[:2]
-
-        if zoom > 1.0:
-
-            ausschnitt_breite = int(
-                breite / zoom
-            )
-
-            ausschnitt_hoehe = int(
-                hoehe / zoom
-            )
-
-            max_x = (
-                breite
-                -
-                ausschnitt_breite
-            )
-
-            max_y = (
-                hoehe
-                -
-                ausschnitt_hoehe
-            )
-
-            x1 = int(
-                position_x * max_x
-            )
-
-            y1 = int(
-                position_y * max_y
-            )
-
-            x2 = (
-                x1
-                +
-                ausschnitt_breite
-            )
-
-            y2 = (
-                y1
-                +
-                ausschnitt_hoehe
-            )
-
-            bild = bild[
-                y1:y2,
-                x1:x2
-            ]
-
-            bild = cv2.resize(
-                bild,
-                (
-                    breite,
-                    hoehe
-                ),
-                interpolation=cv2.INTER_LINEAR
-            )
-
-        erfolg, buffer = cv2.imencode(
-            ".jpg",
-            bild
-        )
-
-        if not erfolg:
-            continue
-
-        bild_bytes = buffer.tobytes()
-
-        yield (
-            b"--frame\r\n"
-            b"Content-Type: image/jpeg\r\n\r\n"
-            +
-            bild_bytes
-            +
-            b"\r\n"
-        )
-
-
-# ============================================================
 # STARTSEITE
 # ============================================================
 
@@ -701,7 +755,7 @@ def home():
 
 
 # ============================================================
-# VIDEO
+# VIDEO FEED
 # ============================================================
 
 @app.route("/video_feed")
@@ -712,7 +766,11 @@ def video_feed():
         mimetype=(
             "multipart/x-mixed-replace;"
             " boundary=frame"
-        )
+        ),
+        headers={
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache"
+        }
     )
 
 
@@ -736,7 +794,7 @@ def set_zoom():
 
     try:
 
-        zoom = float(
+        neuer_zoom = float(
             daten.get(
                 "zoom",
                 zoom
@@ -746,12 +804,12 @@ def set_zoom():
     except Exception:
 
         return jsonify({
-            "error": "Ungültiger Zoom"
+            "error": "UngÃ¼ltiger Zoom"
         }), 400
 
     zoom = max(
         1.0,
-        min(4.0, zoom)
+        min(4.0, neuer_zoom)
     )
 
     if zoom == 1.0:
@@ -808,7 +866,7 @@ def move():
     else:
 
         return jsonify({
-            "error": "Ungültige Richtung"
+            "error": "UngÃ¼ltige Richtung"
         }), 400
 
     position_x = max(
@@ -822,6 +880,32 @@ def move():
     )
 
     return jsonify({
+        "x": position_x,
+        "y": position_y,
+        "zoom": zoom
+    })
+
+
+# ============================================================
+# KAMERA RESET
+# ============================================================
+
+@app.route(
+    "/camera_reset",
+    methods=["POST"]
+)
+def camera_reset():
+
+    global zoom
+    global position_x
+    global position_y
+
+    zoom = 1.0
+    position_x = 0.5
+    position_y = 0.5
+
+    return jsonify({
+        "zoom": zoom,
         "x": position_x,
         "y": position_y
     })
@@ -840,7 +924,6 @@ def ships_api():
 
     with schiffe_lock:
 
-        # alte Schiffe löschen
         alte_mmsi = []
 
         for mmsi, schiff in schiffe.items():
@@ -861,10 +944,6 @@ def ships_api():
 
             del schiffe[mmsi]
 
-        # --------------------------------------------------------
-        # Schiffe ausgeben
-        # --------------------------------------------------------
-
         for schiff in schiffe.values():
 
             lat = schiff.get(
@@ -884,6 +963,9 @@ def ships_api():
                 lat,
                 lon
             )
+
+            if entfernung > 1.0:
+                continue
 
             richtung = berechne_richtung(
                 CAMERA_LAT,
@@ -929,7 +1011,6 @@ def ships_api():
                 daten
             )
 
-    # Fahrende Schiffe zuerst
     ausgabe.sort(
         key=lambda x: (
             not x["moving"],
@@ -957,13 +1038,12 @@ def ais_status_api():
         ais_status
     )
 
-    status[
-        "ship_count"
-    ] = len(schiffe)
+    with schiffe_lock:
+        status[
+            "ship_count"
+        ] = len(schiffe)
 
-    if status[
-        "last_message"
-    ]:
+    if status["last_message"]:
 
         status[
             "last_message_ago"
@@ -986,6 +1066,32 @@ def ais_status_api():
 
 
 # ============================================================
+# KAMERA STATUS
+# ============================================================
+
+@app.route("/camera_status")
+def camera_status():
+
+    with kamera_lock:
+
+        hat_bild = (
+            aktuelles_jpeg
+            is not None
+        )
+
+        aktueller_zoom = zoom
+
+    return jsonify({
+        "camera_open": kamera.isOpened(),
+        "has_frame": hat_bild,
+        "zoom": aktueller_zoom,
+        "width": CAMERA_WIDTH,
+        "height": CAMERA_HEIGHT,
+        "fps": CAMERA_FPS
+    })
+
+
+# ============================================================
 # PROGRAMM START
 # ============================================================
 
@@ -996,7 +1102,7 @@ if __name__ == "__main__":
         "========================================"
     )
     print(
-        " RASPBERRY PI ELBE VISION"
+        "     RASPBERRY PI ELBE VISION"
     )
     print(
         "========================================"
@@ -1005,6 +1111,21 @@ if __name__ == "__main__":
     print(
         "Kamera:",
         kamera.isOpened()
+    )
+
+    print(
+        "Kamera GerÃ¤t:",
+        CAMERA_DEVICE
+    )
+
+    print(
+        "AuflÃ¶sung:",
+        f"{CAMERA_WIDTH}x{CAMERA_HEIGHT}"
+    )
+
+    print(
+        "FPS:",
+        CAMERA_FPS
     )
 
     print(
@@ -1019,16 +1140,25 @@ if __name__ == "__main__":
     )
     print()
 
-    # AIS im Hintergrund
+    # --------------------------------------------------------
+    # AIS starten
+    # --------------------------------------------------------
+
     threading.Thread(
         target=starte_ais,
-        daemon=True
+        daemon=True,
+        name="AISStream"
     ).start()
 
-    # Flask
+    # --------------------------------------------------------
+    # Flask starten
+    # --------------------------------------------------------
+
     app.run(
         host="0.0.0.0",
         port=5000,
         debug=False,
-        threaded=True
+        threaded=True,
+        use_reloader=False
     )
+
