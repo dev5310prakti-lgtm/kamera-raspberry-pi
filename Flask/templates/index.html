@@ -1,11 +1,17 @@
-<!DOCTYPE html> <html lang="de"> <head> <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!DOCTYPE html>
+<html lang="de">
 
-<title>Raspberry Pi Camera</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="style.css">
+    <title>Raspberry Pi Camera</title>
 
-</head> <body>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
 <!-- Kopfbereich -->
 <header class="header">
 
@@ -35,34 +41,43 @@
     <div class="kamera-bereich">
 
         <div class="kamera">
-
-<div class="kamera">
-    <img id="kameraBild"
-         src="{{ url_for('video_feed') }}"
-         alt="Live-Kamera">
-</div>
-
+            <img id="kameraBild"
+                 src="{{ url_for('video_feed') }}"
+                 alt="Live-Kamera">
         </div>
 
     </div>
 
+    <div class="fullscreen-bereich">
 
-    <!-- Steuerung -->
+            <button id="fullscreenButton" class="fullscreen-button">
+                ⛶ Vollbild
+            </button>
+    </div>
+
+
+    <!-- Zoom-Steuerung -->
     <div class="steuerung">
 
-        <button class="zoom-button">
+        <button id="zoomMinus" class="zoom-button">
             −
         </button>
 
-        <div class="zoom-anzeige">
+        <div id="zoomAnzeige" class="zoom-anzeige">
             100%
         </div>
 
-        <button class="zoom-button">
+        <button id="zoomPlus" class="zoom-button">
             +
         </button>
 
     </div>
+
+
+    <p class="zoom-hinweis">
+        Bei Zoom: Pfeiltasten zum Bewegen
+    </p>
+
 
 </main>
 
@@ -80,4 +95,176 @@
 
 </footer>
 
-</body> </html>
+
+<!-- JavaScript -->
+<script>
+
+let zoom = 1.0;
+
+const zoomMinus = document.getElementById("zoomMinus");
+const zoomPlus = document.getElementById("zoomPlus");
+const zoomAnzeige = document.getElementById("zoomAnzeige");
+
+
+// ========================
+// ZOOM
+// ========================
+
+function zoomAendern(neuerZoom) {
+
+    // Zoom zwischen 1x und 4x begrenzen
+    zoom = Math.max(1.0, Math.min(4.0, neuerZoom));
+
+    // Anzeige aktualisieren
+    zoomAnzeige.textContent =
+        Math.round(zoom * 100) + "%";
+
+    // Zoom an Flask senden
+    fetch("/zoom", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            zoom: zoom
+        })
+    });
+}
+
+
+// Minus-Button
+zoomMinus.addEventListener("click", function() {
+    zoomAendern(zoom - 0.5);
+});
+
+
+// Plus-Button
+zoomPlus.addEventListener("click", function() {
+    zoomAendern(zoom + 0.5);
+});
+
+
+// ========================
+// TASTATURSTEUERUNG
+// ========================
+
+document.addEventListener("keydown", function(event) {
+
+    // PLUS / ZOOM IN
+    if (
+        event.key === "+" ||
+        event.key === "="
+    ) {
+        event.preventDefault();
+
+        zoomAendern(zoom + 0.5);
+        return;
+    }
+
+
+    // MINUS / ZOOM OUT
+    if (event.key === "-") {
+        event.preventDefault();
+
+        zoomAendern(zoom - 0.5);
+        return;
+    }
+
+
+    // ========================
+    // PFEILTASTEN
+    // ========================
+
+    let richtung = null;
+
+    if (event.key === "ArrowLeft") {
+        richtung = "links";
+    }
+
+    else if (event.key === "ArrowRight") {
+        richtung = "rechts";
+    }
+
+    else if (event.key === "ArrowUp") {
+        richtung = "oben";
+    }
+
+    else if (event.key === "ArrowDown") {
+        richtung = "unten";
+    }
+
+
+    if (richtung !== null) {
+
+        event.preventDefault();
+
+        if (zoom <= 1.0) {
+            return;
+        }
+
+        fetch("/move", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                richtung: richtung
+            })
+        });
+    }
+
+});
+
+
+// ========================
+// FULLSCREEN
+// ========================
+
+const fullscreenButton =
+    document.getElementById("fullscreenButton");
+
+const kameraBereich =
+    document.querySelector(".kamera-bereich");
+
+
+fullscreenButton.addEventListener("click", function() {
+
+    if (!document.fullscreenElement) {
+
+        kameraBereich.requestFullscreen();
+
+    } else {
+
+        document.exitFullscreen();
+
+    }
+
+});
+
+
+document.addEventListener("fullscreenchange", function() {
+
+    if (document.fullscreenElement) {
+        fullscreenButton.textContent = "✕";
+    } else {
+        fullscreenButton.textContent = "⛶ Vollbild";
+    }
+
+});
+
+
+// Button aktualisieren, wenn Fullscreen
+// z.B. mit ESC verlassen wird
+document.addEventListener("fullscreenchange", function() {
+
+    if (document.fullscreenElement) {
+        fullscreenButton.textContent = "⛶ Vollbild verlassen";
+    } else {
+        fullscreenButton.textContent = "⛶ Vollbild";
+    }
+
+});
+</script>
+
+</body>
+</html>
