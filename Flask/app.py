@@ -804,6 +804,10 @@ async def ais_verbindung():
                             ==
                             "PositionReport"
                         ):
+                            print(
+                                "AIS PositionReport:",
+                                time.strftime("%H:%M:%S")
+                            )
 
                             verarbeite_ais_nachricht(
                                 data
