@@ -1,93 +1,137 @@
+
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>ELBE // MARITIME MONITOR</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>
+        ELBE VISION // HAMBURG
+    </title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Leaflet -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
 </head>
+
 
 <body>
 
-<div class="ambient ambient-1"></div>
-<div class="ambient ambient-2"></div>
-<div class="ambient ambient-3"></div>
+<div class="ambient ambient-a"></div>
+<div class="ambient ambient-b"></div>
 
-<div class="app-shell">
 
-    <!-- TOP BAR -->
+<div class="dashboard-shell">
+
+
+    <!-- ================================================== -->
+    <!-- TOPBAR -->
+    <!-- ================================================== -->
+
     <header class="topbar">
 
         <div class="brand">
+
             <div class="brand-mark">
-                <span></span>
-                <span></span>
-                <span></span>
+                EV
             </div>
 
             <div>
-                <div class="brand-title">ELBE<span>//</span>VISION</div>
-                <div class="brand-subtitle">MARITIME MONITORING SYSTEM</div>
+
+                <div class="brand-title">
+                    ELBE VISION
+                </div>
+
+                <div class="brand-subtitle">
+                    RASPBERRY PI // MARITIME MONITORING
+                </div>
+
             </div>
+
         </div>
 
-        <div class="top-center">
-            <div class="live-pill">
-                <span class="live-dot"></span>
-                LIVE MONITORING
-            </div>
+
+        <div class="topbar-center">
+
+            <span class="live-dot"></span>
+
+            <span>
+                LIVE SYSTEM
+            </span>
+
         </div>
 
-        <div class="top-right">
-            <div class="location">
-                <span class="location-dot"></span>
-                HAMBURG · ELBE
+
+        <div class="topbar-right">
+
+            <div class="location-label">
+                HAMBURG // ELBE
             </div>
 
-            <div class="clock" id="clock">--:--:--</div>
+            <div
+                id="clock"
+                class="clock"
+            >
+                --:--:--
+            </div>
+
         </div>
 
     </header>
 
 
+    <!-- ================================================== -->
     <!-- MAIN -->
-    <main class="dashboard">
+    <!-- ================================================== -->
 
+    <main class="main-grid">
+
+
+        <!-- ================================================= -->
         <!-- CAMERA -->
-        <section class="camera-section">
+        <!-- ================================================= -->
 
-            <div class="section-heading">
+        <section class="camera-panel glass-panel">
+
+            <div class="panel-header">
 
                 <div>
+
                     <div class="eyebrow">
-                        <span class="eyebrow-line"></span>
-                        CAMERA FEED
+                        OPTICAL SENSOR
                     </div>
 
-                    <h1>ELBE RIVER <span>LIVE</span></h1>
+                    <h1>
+                        ELBE CAMERA
+                    </h1>
+
                 </div>
 
-                <div class="camera-meta">
-                    <div class="meta-item">
-                        <span>LAT</span>
-                        53.5450° N
-                    </div>
+                <div class="camera-status">
 
-                    <div class="meta-item">
-                        <span>LON</span>
-                        9.9504° E
-                    </div>
+                    <span
+                        id="connectionDot"
+                        class="status-dot"
+                    ></span>
 
-                    <div class="meta-item">
-                        <span>STATUS</span>
-                        <b class="green">ONLINE</b>
-                    </div>
+                    <span id="connectionText">
+                        CAMERA ONLINE
+                    </span>
+
                 </div>
 
             </div>
@@ -95,593 +139,1490 @@
 
             <div class="camera-frame">
 
-                <div class="camera-glow"></div>
+                <img
+                    id="kameraBild"
+                    src="{{ url_for('video_feed') }}"
+                    alt="Live Kamerabild"
+                >
 
-                <div class="corner corner-tl"></div>
-                <div class="corner corner-tr"></div>
-                <div class="corner corner-bl"></div>
-                <div class="corner corner-br"></div>
 
-                <div class="camera-header">
-                    <div class="camera-header-left">
-                        <span class="record-dot"></span>
-                        CAMERA 01
-                    </div>
+                <div class="camera-overlay"></div>
 
-                    <div class="camera-header-right">
-                        <span id="fpsDisplay">LIVE</span>
-                        <span class="separator">·</span>
-                        1280 × 720
-                    </div>
+                <div class="scanline"></div>
+
+
+                <div class="hud hud-top-left">
+                    CAM-01<br>
+                    53.5450° N<br>
+                    9.9504° E
                 </div>
 
 
-                <div class="camera-image-wrapper">
+                <div class="hud hud-top-right">
+                    LIVE<br>
+                    1280 × 720
+                </div>
 
-                    <img
-                        id="kameraBild"
-                        src="{{ url_for('video_feed') }}"
-                        alt="Live-Kamerabild Elbe"
+
+                <div class="hud hud-bottom-left">
+                    ELBE / HAMBURG
+                </div>
+
+
+                <div class="hud hud-bottom-right">
+                    <span id="cameraZoomLabel">
+                        ZOOM 1.0×
+                    </span>
+                </div>
+
+
+                <!-- Kamera Fadenkreuz -->
+
+                <div class="camera-crosshair">
+
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+
+                </div>
+
+
+                <!-- Kamera Controls -->
+
+                <div class="camera-controls">
+
+                    <button
+                        onclick="changeZoom(-0.5)"
+                        title="Zoom out"
                     >
+                        −
+                    </button>
 
-                    <div class="scanline"></div>
+                    <button
+                        onclick="changeZoom(0.5)"
+                        title="Zoom in"
+                    >
+                        +
+                    </button>
 
-                    <div class="hud hud-top-left">
-                        <div>ELBE RIVER</div>
-                        <small>HAMBURG · DE</small>
-                    </div>
+                    <button
+                        onclick="moveCamera('oben')"
+                        title="Nach oben"
+                    >
+                        ↑
+                    </button>
 
-                    <div class="hud hud-bottom-left">
-                        <div id="cameraTime">--:--:--</div>
-                        <small>LOCAL TIME</small>
-                    </div>
+                    <button
+                        onclick="moveCamera('links')"
+                        title="Nach links"
+                    >
+                        ←
+                    </button>
 
-                    <div class="hud hud-bottom-right">
-                        <div>53.5450° N</div>
-                        <small>9.9504° E</small>
-                    </div>
+                    <button
+                        onclick="moveCamera('unten')"
+                        title="Nach unten"
+                    >
+                        ↓
+                    </button>
+
+                    <button
+                        onclick="moveCamera('rechts')"
+                        title="Nach rechts"
+                    >
+                        →
+                    </button>
+
+                    <button
+                        onclick="resetCamera()"
+                        title="Kamera zurücksetzen"
+                    >
+                        ⟳
+                    </button>
+
+                    <button
+                        onclick="fullscreenCamera()"
+                        title="Vollbild"
+                    >
+                        ⛶
+                    </button>
 
                 </div>
 
             </div>
 
 
-            <!-- CONTROLS -->
-            <div class="camera-controls">
+            <div class="camera-footer">
 
-                <div class="control-group zoom-controls">
-                    <button onclick="changeZoom(-0.25)" aria-label="Zoom out">−</button>
+                <div class="camera-coordinate">
 
-                    <div class="zoom-display">
-                        <span>ZOOM</span>
-                        <strong id="zoomValue">1.00×</strong>
-                    </div>
+                    <span class="footer-label">
+                        POSITION
+                    </span>
 
-                    <button onclick="changeZoom(0.25)" aria-label="Zoom in">+</button>
-                </div>
-
-
-                <div class="direction-controls">
-
-                    <button onclick="moveCamera('oben')" class="up">↑</button>
-
-                    <div class="direction-row">
-                        <button onclick="moveCamera('links')">←</button>
-
-                        <button onclick="resetCamera()" class="center-button">
-                            <span></span>
-                        </button>
-
-                        <button onclick="moveCamera('rechts')">→</button>
-                    </div>
-
-                    <button onclick="moveCamera('unten')" class="down">↓</button>
+                    53.544999° N
+                    /
+                    9.950361° E
 
                 </div>
 
 
-                <button class="fullscreen-button" onclick="toggleFullscreen()">
-                    <span>⛶</span>
-                    FULLSCREEN
-                </button>
+                <div class="camera-coordinate">
+
+                    <span class="footer-label">
+                        COVERAGE
+                    </span>
+
+                    ELBE // HAMBURG
+
+                </div>
+
+
+                <div class="camera-coordinate">
+
+                    <span class="footer-label">
+                        AIS RANGE
+                    </span>
+
+                    1.00 KM
+
+                </div>
 
             </div>
 
         </section>
 
 
-        <!-- AIS -->
-        <aside class="ais-panel">
 
-            <div class="ais-header">
+        <!-- ================================================= -->
+        <!-- AIS SIDEBAR -->
+        <!-- ================================================= -->
+
+        <aside class="ais-panel glass-panel">
+
+
+            <div class="panel-header">
 
                 <div>
+
                     <div class="eyebrow">
-                        <span class="eyebrow-line"></span>
-                        AIS NETWORK
+                        AUTOMATIC IDENTIFICATION SYSTEM
                     </div>
 
-                    <h2>VESSEL TRACKING</h2>
+                    <h2>
+                        VESSEL TRAFFIC
+                    </h2>
+
                 </div>
 
-                <div class="ais-status">
-                    <span id="connectionDot" class="status-dot"></span>
-                    <span id="connectionText">CONNECTING</span>
+                <div
+                    id="aisLive"
+                    class="live-pill"
+                >
+                    <span></span>
+                    AIS LIVE
                 </div>
 
             </div>
 
+
+            <!-- STATS -->
 
             <div class="stats-grid">
 
                 <div class="stat-card">
-                    <div class="stat-label">VESSELS</div>
-                    <div class="stat-value" id="shipCount">0</div>
-                    <div class="stat-line"></div>
+
+                    <span>
+                        VESSELS
+                    </span>
+
+                    <strong id="shipCount">
+                        0
+                    </strong>
+
                 </div>
 
-                <div class="stat-card">
-                    <div class="stat-label">MOVING</div>
-                    <div class="stat-value" id="movingCount">0</div>
-                    <div class="stat-line"></div>
-                </div>
 
                 <div class="stat-card">
-                    <div class="stat-label">MESSAGES</div>
-                    <div class="stat-value" id="messageCount">0</div>
-                    <div class="stat-line"></div>
+
+                    <span>
+                        MOVING
+                    </span>
+
+                    <strong id="movingCount">
+                        0
+                    </strong>
+
                 </div>
 
+
                 <div class="stat-card">
-                    <div class="stat-label">RANGE</div>
-                    <div class="stat-value">~7<span>KM</span></div>
-                    <div class="stat-line"></div>
+
+                    <span>
+                        MESSAGES
+                    </span>
+
+                    <strong id="messageCount">
+                        0
+                    </strong>
+
                 </div>
 
             </div>
 
+
+            <!-- SHIP LIST -->
 
             <div class="ship-list-header">
-                <span>ACTIVE VESSELS</span>
-                <span id="aisLive">LIVE</span>
+
+                <span>
+                    NEARBY VESSELS
+                </span>
+
+                <span id="radiusLabel">
+                    RADIUS 1.0 KM
+                </span>
+
             </div>
 
 
-            <div id="shipList" class="ship-list">
+            <div
+                id="shipList"
+                class="ship-list"
+            >
 
                 <div class="empty-state">
-                    <div class="radar-loader">
-                        <span></span>
+
+                    <div class="empty-icon">
+                        ◇
                     </div>
 
-                    <div>WAITING FOR AIS DATA</div>
-                    <small>SCANNING ELBE RIVER</small>
+                    <div>
+                        SCANNING AIS...
+                    </div>
+
+                    <small>
+                        WAITING FOR VESSEL DATA
+                    </small>
+
                 </div>
 
-            </div>
-
-
-            <div class="ais-footer">
-                <span class="footer-pulse"></span>
-                AISSTREAM CONNECTION
-                <span class="footer-right" id="aisStatus">INITIALIZING</span>
             </div>
 
         </aside>
 
+
     </main>
 
 
-    <footer class="footer">
+    <!-- ================================================== -->
+    <!-- MAP -->
+    <!-- ================================================== -->
 
-        <div>
-            ELBE VISION
-            <span>·</span>
+    <section class="map-panel glass-panel">
+
+
+        <div class="panel-header map-header">
+
+            <div>
+
+                <div class="eyebrow">
+                    GEOSPATIAL TRACKING
+                </div>
+
+                <h2>
+                    ELBE MARITIME MAP
+                </h2>
+
+            </div>
+
+
+            <div class="map-status">
+
+                <span class="map-status-dot"></span>
+
+                <span>
+                    LIVE POSITION TRACKING
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="map-wrapper">
+
+            <div
+                id="shipMap"
+                class="ship-map"
+            ></div>
+
+
+            <div class="map-overlay map-overlay-top">
+
+                <div class="map-badge">
+                    <span></span>
+                    LIVE AIS
+                </div>
+
+                <div class="map-badge">
+                    RANGE 1.0 KM
+                </div>
+
+            </div>
+
+
+            <div class="map-legend">
+
+                <div class="legend-title">
+                    TRACK STATUS
+                </div>
+
+                <div class="legend-item">
+
+                    <span class="legend-marker moving"></span>
+
+                    <span>
+                        FAHREND
+                    </span>
+
+                </div>
+
+                <div class="legend-item">
+
+                    <span class="legend-marker stopped"></span>
+
+                    <span>
+                        STEHEND
+                    </span>
+
+                </div>
+
+                <div class="legend-item">
+
+                    <span class="legend-camera"></span>
+
+                    <span>
+                        KAMERA
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="map-footer">
+
+            <span>
+                CENTER:
+                53.544999° N / 9.950361° E
+            </span>
+
+            <span id="mapShipCount">
+                0 VESSELS TRACKED
+            </span>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================================== -->
+    <!-- FOOTER -->
+    <!-- ================================================== -->
+
+    <footer class="system-footer">
+
+        <span>
+            ELBE VISION SYSTEM
+        </span>
+
+        <span>
             RASPBERRY PI 5
-        </div>
+        </span>
 
-        <div>
-            AIS
-            <span>·</span>
-            CAMERA
-            <span>·</span>
-            REAL-TIME
-        </div>
+        <span>
+            AISSTREAM
+        </span>
+
+        <span>
+            SYSTEM ONLINE
+        </span>
 
     </footer>
+
 
 </div>
 
 
+<!-- Leaflet -->
+
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+></script>
+
+
 <script>
 
-let zoom = 1.0;
-let positionX = 0.5;
-let positionY = 0.5;
+const CAMERA_LAT = 53.544999;
+const CAMERA_LON = 9.9503613;
 
-let totalMessages = 0;
-let lastShipUpdate = 0;
+let currentZoom = 1.0;
+
+let map;
+let cameraMarker;
+let rangeCircle;
+
+const shipMarkers = {};
 
 
-/* CLOCK */
+// ============================================================
+// UHR
+// ============================================================
 
 function updateClock() {
 
     const now = new Date();
 
-    const time = now.toLocaleTimeString("de-DE", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit"
-    });
+    document.getElementById(
+        "clock"
+    ).textContent =
+        now.toLocaleTimeString(
+            "de-DE"
+        );
 
-    document.getElementById("clock").textContent = time;
-    document.getElementById("cameraTime").textContent = time;
 }
 
-setInterval(updateClock, 1000);
+setInterval(
+    updateClock,
+    1000
+);
+
 updateClock();
 
 
-/* CAMERA */
+// ============================================================
+// KARTE
+// ============================================================
 
-async function changeZoom(amount) {
+function initMap() {
 
-    zoom += amount;
-    zoom = Math.max(1.0, Math.min(4.0, zoom));
+    map = L.map(
+        "shipMap",
+        {
+            zoomControl: true,
+            attributionControl: true
+        }
+    ).setView(
+        [
+            CAMERA_LAT,
+            CAMERA_LON
+        ],
+        15
+    );
 
-    try {
 
-        const response = await fetch("/zoom", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                zoom: zoom
-            })
-        });
+    // Dunkle OpenStreetMap-Karte
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom: 19,
+            attribution:
+                '&copy; OpenStreetMap contributors'
+        }
+    ).addTo(map);
 
-        const data = await response.json();
 
-        zoom = data.zoom;
+    // Kamera-Marker
+    cameraMarker = L.marker(
+        [
+            CAMERA_LAT,
+            CAMERA_LON
+        ],
+        {
+            icon: createCameraIcon()
+        }
+    ).addTo(map);
 
-        document.getElementById("zoomValue").textContent =
-            zoom.toFixed(2) + "×";
 
-    } catch (error) {
-        console.error("Zoom error:", error);
-    }
+    cameraMarker.bindPopup(
+        "<strong>ELBE VISION</strong><br>Kamera"
+    );
+
+
+    // 1-km-Kreis
+    rangeCircle = L.circle(
+        [
+            CAMERA_LAT,
+            CAMERA_LON
+        ],
+        {
+            radius: 1000,
+            className: "range-circle",
+            fillOpacity: 0.04,
+            weight: 1
+        }
+    ).addTo(map);
+
 }
 
 
-async function moveCamera(direction) {
+function createCameraIcon() {
 
-    try {
+    return L.divIcon({
 
-        const response = await fetch("/move", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                richtung: direction
-            })
-        });
+        className: "camera-map-icon",
 
-        const data = await response.json();
+        html: `
+            <div class="camera-marker">
+                <div class="camera-marker-core"></div>
+                <div class="camera-marker-ring"></div>
+            </div>
+        `,
 
-        positionX = data.x;
-        positionY = data.y;
+        iconSize: [
+            32,
+            32
+        ],
 
-    } catch (error) {
-        console.error("Camera movement error:", error);
-    }
+        iconAnchor: [
+            16,
+            16
+        ]
+    });
+
 }
 
 
-async function resetCamera() {
+// ============================================================
+// SCHIFF ICON
+// ============================================================
 
-    zoom = 1.0;
+function createShipIcon(
+    moving,
+    course
+) {
 
-    try {
+    const rotation =
+        course !== null &&
+        course !== undefined
+            ? course
+            : 0;
 
-        await fetch("/zoom", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                zoom: 1.0
-            })
-        });
+    const stateClass =
+        moving
+            ? "ship-moving"
+            : "ship-stopped";
 
-        document.getElementById("zoomValue").textContent = "1.00×";
 
-    } catch (error) {
-        console.error(error);
-    }
+    return L.divIcon({
+
+        className:
+            "ship-map-icon " +
+            stateClass,
+
+        html: `
+            <div
+                class="ship-marker"
+                style="transform: rotate(${rotation}deg)"
+            >
+                <div class="ship-arrow"></div>
+                <div class="ship-core"></div>
+            </div>
+        `,
+
+        iconSize: [
+            34,
+            34
+        ],
+
+        iconAnchor: [
+            17,
+            17
+        ]
+
+    });
+
 }
 
 
-function toggleFullscreen() {
+// ============================================================
+// SCHIFF POPUP
+// ============================================================
 
-    const frame = document.querySelector(".camera-frame");
+function createShipPopup(
+    ship
+) {
 
-    if (!document.fullscreenElement) {
-        frame.requestFullscreen?.();
-    } else {
-        document.exitFullscreen?.();
-    }
-}
-
-
-/* KEYBOARD */
-
-document.addEventListener("keydown", event => {
-
-    if (event.key === "+" || event.key === "=") {
-        changeZoom(0.25);
-    }
-
-    if (event.key === "-") {
-        changeZoom(-0.25);
-    }
-
-    const keys = {
-        ArrowLeft: "links",
-        ArrowRight: "rechts",
-        ArrowUp: "oben",
-        ArrowDown: "unten"
-    };
-
-    if (keys[event.key]) {
-        event.preventDefault();
-        moveCamera(keys[event.key]);
-    }
-
-});
-
-
-/* AIS */
-
-function formatNumber(number, decimals = 1) {
-
-    if (number === null || number === undefined) {
-        return "—";
-    }
-
-    return Number(number).toFixed(decimals);
-}
-
-
-function createShipCard(ship) {
-
-    const name =
-        ship.name ||
-        ship.ship_name ||
-        "UNKNOWN VESSEL";
+    const status =
+        ship.moving
+            ? "FAHREND"
+            : "STEHEND";
 
     const speed =
-        Number(ship.sog || 0);
-
-    const course =
-        ship.cog !== undefined
-            ? Number(ship.cog).toFixed(0) + "°"
-            : "—";
-
-    const distance =
-        ship.distance_km !== undefined
-            ? Number(ship.distance_km).toFixed(1) + " km"
-            : "—";
-
-    const bearing =
-        ship.bearing !== undefined
-            ? Number(ship.bearing).toFixed(0) + "°"
-            : "—";
-
-    const moving = speed > 0.5;
+        ship.motion_speed_kmh !== undefined
+            ? ship.motion_speed_kmh
+            : ship.speed_kmh;
 
     return `
-        <article class="ship-card">
 
-            <div class="ship-card-top">
+        <div class="ship-popup">
 
-                <div class="ship-icon">
-                    <span></span>
-                </div>
-
-                <div class="ship-name">
-                    ${escapeHtml(name)}
-                </div>
-
-                <div class="ship-state ${moving ? "moving" : "stopped"}">
-                    <span></span>
-                    ${moving ? "MOVING" : "STOPPED"}
-                </div>
-
+            <div class="popup-status">
+                ${status}
             </div>
 
-
-            <div class="ship-main">
-
-                <div class="ship-speed">
-                    <strong>${speed.toFixed(1)}</strong>
-                    <span>KN</span>
-                </div>
-
-                <div class="ship-course">
-                    <span>COURSE</span>
-                    <strong>${course}</strong>
-                </div>
-
+            <div class="popup-name">
+                ${escapeHtml(ship.name)}
             </div>
 
-
-            <div class="ship-details">
-
-                <div>
-                    <span>MMSI</span>
-                    <strong>${ship.mmsi || "—"}</strong>
-                </div>
-
-                <div>
-                    <span>DISTANCE</span>
-                    <strong>${distance}</strong>
-                </div>
-
-                <div>
-                    <span>BEARING</span>
-                    <strong>${bearing}</strong>
-                </div>
-
+            <div class="popup-row">
+                <span>MMSI</span>
+                <strong>${ship.mmsi}</strong>
             </div>
 
-        </article>
+            <div class="popup-row">
+                <span>GESCHWINDIGKEIT</span>
+                <strong>${speed} km/h</strong>
+            </div>
+
+            <div class="popup-row">
+                <span>ENTFERNUNG</span>
+                <strong>${ship.distance_km} km</strong>
+            </div>
+
+            <div class="popup-row">
+                <span>KURS</span>
+                <strong>
+                    ${
+                        ship.course !== null &&
+                        ship.course !== undefined
+                            ? ship.course + "°"
+                            : "—"
+                    }
+                </strong>
+            </div>
+
+        </div>
+
     `;
+
 }
 
 
-function escapeHtml(value) {
+// ============================================================
+// HTML SICHER MACHEN
+// ============================================================
+
+function escapeHtml(
+    value
+) {
 
     return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
+
 }
 
 
-async function updateShips() {
+// ============================================================
+// SCHIFFE AUF KARTE
+// ============================================================
+
+function updateMapShips(
+    ships
+) {
+
+    const currentMmsi =
+        new Set();
+
+
+    ships.forEach(
+        ship => {
+
+            currentMmsi.add(
+                ship.mmsi
+            );
+
+
+            const position = [
+                ship.latitude,
+                ship.longitude
+            ];
+
+
+            const moving =
+                Boolean(
+                    ship.moving
+                );
+
+
+            if (
+                ship.mmsi
+                in shipMarkers
+            ) {
+
+                const marker =
+                    shipMarkers[
+                        ship.mmsi
+                    ];
+
+                marker.setLatLng(
+                    position
+                );
+
+                marker.setIcon(
+                    createShipIcon(
+                        moving,
+                        ship.course
+                    )
+                );
+
+                marker.setPopupContent(
+                    createShipPopup(
+                        ship
+                    )
+                );
+
+            } else {
+
+                const marker =
+                    L.marker(
+                        position,
+                        {
+                            icon:
+                                createShipIcon(
+                                    moving,
+                                    ship.course
+                                )
+                        }
+                    )
+                    .addTo(map);
+
+
+                marker.bindPopup(
+                    createShipPopup(
+                        ship
+                    )
+                );
+
+
+                shipMarkers[
+                    ship.mmsi
+                ] = marker;
+
+            }
+
+        }
+    );
+
+
+    // Alte Marker entfernen
+
+    Object.keys(
+        shipMarkers
+    ).forEach(
+        mmsi => {
+
+            if (
+                !currentMmsi.has(
+                    mmsi
+                )
+            ) {
+
+                map.removeLayer(
+                    shipMarkers[mmsi]
+                );
+
+                delete shipMarkers[
+                    mmsi
+                ];
+
+            }
+
+        }
+    );
+
+}
+
+
+// ============================================================
+// AIS DATEN
+// ============================================================
+
+async function updateAIS() {
 
     try {
 
-        const response = await fetch("/ships", {
-            cache: "no-store"
-        });
+        const response =
+            await fetch(
+                "/ships",
+                {
+                    cache: "no-store"
+                }
+            );
 
         if (!response.ok) {
-            throw new Error("AIS HTTP error");
+            throw new Error(
+                "AIS HTTP " +
+                response.status
+            );
         }
 
-        const data = await response.json();
+        const data =
+            await response.json();
 
-        const ships = data.ships || [];
-
-        document.getElementById("shipCount").textContent =
-            ships.length;
-
-        const moving = ships.filter(
-            ship => Number(ship.sog || 0) > 0.5
-        ).length;
-
-        document.getElementById("movingCount").textContent =
-            moving;
-
-        totalMessages++;
-
-        document.getElementById("messageCount").textContent =
-            totalMessages;
+        const ships =
+            data.ships || [];
 
 
-        const list = document.getElementById("shipList");
+        // ----------------------------------------------------
+        // STATS
+        // ----------------------------------------------------
 
-        if (ships.length === 0) {
-
-            list.innerHTML = `
-                <div class="empty-state">
-                    <div class="radar-loader">
-                        <span></span>
-                    </div>
-
-                    <div>NO VESSELS DETECTED</div>
-                    <small>SCANNING ELBE RIVER</small>
-                </div>
-            `;
-
-            return;
-        }
+        document.getElementById(
+            "shipCount"
+        ).textContent =
+            data.count || 0;
 
 
-        list.innerHTML = ships
-            .sort((a, b) =>
-                Number(a.distance_km || 999) -
-                Number(b.distance_km || 999)
-            )
-            .map(createShipCard)
-            .join("");
+        const movingCount =
+            ships.filter(
+                ship =>
+                    ship.moving
+            ).length;
 
 
-        lastShipUpdate = Date.now();
-
-    } catch (error) {
-
-        console.error("AIS error:", error);
-
-        document.getElementById("shipList").innerHTML = `
-            <div class="empty-state error-state">
-                <div class="error-symbol">!</div>
-                <div>AIS CONNECTION LOST</div>
-                <small>RECONNECTING...</small>
-            </div>
-        `;
-    }
-}
+        document.getElementById(
+            "movingCount"
+        ).textContent =
+            movingCount;
 
 
-async function updateAISStatus() {
+        document.getElementById(
+            "messageCount"
+        ).textContent =
+            data.count || 0;
 
-    try {
 
-        const response = await fetch("/ais_status", {
-            cache: "no-store"
-        });
+        document.getElementById(
+            "mapShipCount"
+        ).textContent =
+            ships.length +
+            " VESSELS TRACKED";
 
-        const data = await response.json();
 
-        const connected = data.connected === true;
+        // ----------------------------------------------------
+        // AIS STATUS
+        // ----------------------------------------------------
 
-        const dot =
-            document.getElementById("connectionDot");
+        const aisLive =
+            document.getElementById(
+                "aisLive"
+            );
 
-        const text =
-            document.getElementById("connectionText");
 
-        const status =
-            document.getElementById("aisStatus");
+        if (
+            data.ais_connected
+        ) {
 
-        if (connected) {
-
-            dot.classList.add("connected");
-            text.textContent = "CONNECTED";
-            status.textContent = "ONLINE";
+            aisLive.classList.add(
+                "online"
+            );
 
         } else {
 
-            dot.classList.remove("connected");
-            text.textContent = "CONNECTING";
-            status.textContent = "RECONNECTING";
+            aisLive.classList.remove(
+                "online"
+            );
+
+        }
+
+
+        // ----------------------------------------------------
+        // KARTE
+        // ----------------------------------------------------
+
+        updateMapShips(
+            ships
+        );
+
+
+        // ----------------------------------------------------
+        // LISTE
+        // ----------------------------------------------------
+
+        renderShipList(
+            ships
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "AIS Fehler:",
+            error
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// SCHIFFSLISTE
+// ============================================================
+
+function renderShipList(
+    ships
+) {
+
+    const container =
+        document.getElementById(
+            "shipList"
+        );
+
+
+    if (
+        ships.length === 0
+    ) {
+
+        container.innerHTML = `
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    ◇
+                </div>
+
+                <div>
+                    KEINE SCHIFFE
+                </div>
+
+                <small>
+                    IM 1 KM BEREICH
+                </small>
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    container.innerHTML =
+        ships.map(
+            ship => {
+
+                const moving =
+                    Boolean(
+                        ship.moving
+                    );
+
+
+                const speed =
+                    ship.motion_speed_kmh !== undefined
+                        ? ship.motion_speed_kmh
+                        : ship.speed_kmh;
+
+
+                return `
+
+                    <article
+                        class="
+                            ship-card
+                            ${
+                                moving
+                                    ? "is-moving"
+                                    : "is-stopped"
+                            }
+                        "
+                    >
+
+                        <div class="ship-card-top">
+
+                            <div class="ship-status">
+
+                                <span
+                                    class="
+                                        ship-status-dot
+                                        ${
+                                            moving
+                                                ? "moving"
+                                                : "stopped"
+                                        }
+                                    "
+                                ></span>
+
+                                ${
+                                    moving
+                                        ? "FAHREND"
+                                        : "STEHEND"
+                                }
+
+                            </div>
+
+
+                            <span class="ship-distance">
+
+                                ${ship.distance_km}
+                                KM
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="ship-name">
+
+                            ${escapeHtml(
+                                ship.name
+                            )}
+
+                        </div>
+
+
+                        <div class="ship-mmsi">
+
+                            MMSI
+                            ${ship.mmsi}
+
+                        </div>
+
+
+                        <div class="ship-data-grid">
+
+                            <div>
+
+                                <span>
+                                    SPEED
+                                </span>
+
+                                <strong>
+                                    ${speed}
+                                    <small>
+                                        km/h
+                                    </small>
+                                </strong>
+
+                            </div>
+
+
+                            <div>
+
+                                <span>
+                                    COURSE
+                                </span>
+
+                                <strong>
+
+                                    ${
+                                        ship.course !== null &&
+                                        ship.course !== undefined
+                                            ? ship.course + "°"
+                                            : "—"
+                                    }
+
+                                </strong>
+
+                            </div>
+
+
+                            <div>
+
+                                <span>
+                                    BEARING
+                                </span>
+
+                                <strong>
+
+                                    ${ship.bearing}°
+
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="ship-coordinates">
+
+                            ${Number(
+                                ship.latitude
+                            ).toFixed(5)}
+                            N
+
+                            /
+
+                            ${Number(
+                                ship.longitude
+                            ).toFixed(5)}
+                            E
+
+                        </div>
+
+                    </article>
+
+                `;
+
+            }
+        )
+        .join("");
+
+}
+
+
+// ============================================================
+// KAMERA ZOOM
+// ============================================================
+
+async function changeZoom(
+    amount
+) {
+
+    currentZoom =
+        Math.max(
+            1.0,
+            Math.min(
+                4.0,
+                currentZoom + amount
+            )
+        );
+
+
+    try {
+
+        await fetch(
+            "/zoom",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    zoom: currentZoom
+                })
+            }
+        );
+
+        document.getElementById(
+            "cameraZoomLabel"
+        ).textContent =
+            "ZOOM " +
+            currentZoom.toFixed(1) +
+            "×";
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// KAMERA BEWEGEN
+// ============================================================
+
+async function moveCamera(
+    direction
+) {
+
+    try {
+
+        await fetch(
+            "/move",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    richtung:
+                        direction
+                })
+            }
+        );
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// RESET
+// ============================================================
+
+async function resetCamera() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/camera_reset",
+                {
+                    method: "POST"
+                }
+            );
+
+        const data =
+            await response.json();
+
+        currentZoom =
+            data.zoom;
+
+        document.getElementById(
+            "cameraZoomLabel"
+        ).textContent =
+            "ZOOM " +
+            currentZoom.toFixed(1) +
+            "×";
+
+    } catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// VOLLBILD
+// ============================================================
+
+function fullscreenCamera() {
+
+    const frame =
+        document.querySelector(
+            ".camera-frame"
+        );
+
+
+    if (
+        !document.fullscreenElement
+    ) {
+
+        frame.requestFullscreen();
+
+    } else {
+
+        document.exitFullscreen();
+
+    }
+
+}
+
+
+// ============================================================
+// KAMERA STATUS
+// ============================================================
+
+async function updateCameraStatus() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/camera_status",
+                {
+                    cache: "no-store"
+                }
+            );
+
+        const data =
+            await response.json();
+
+
+        const dot =
+            document.getElementById(
+                "connectionDot"
+            );
+
+        const text =
+            document.getElementById(
+                "connectionText"
+            );
+
+
+        if (
+            data.camera_open &&
+            data.has_frame
+        ) {
+
+            dot.classList.add(
+                "online"
+            );
+
+            text.textContent =
+                "CAMERA ONLINE";
+
+        } else {
+
+            dot.classList.remove(
+                "online"
+            );
+
+            text.textContent =
+                "CAMERA SIGNAL LOST";
+
         }
 
     } catch (error) {
 
-        document.getElementById("connectionText")
-            .textContent = "OFFLINE";
+        console.error(
+            error
+        );
 
-        document.getElementById("aisStatus")
-            .textContent = "OFFLINE";
     }
+
 }
 
 
-setInterval(updateShips, 1500);
-setInterval(updateAISStatus, 1500);
+// ============================================================
+// TASTATUR
+// ============================================================
 
-updateShips();
-updateAISStatus();
+document.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "+"
+            ||
+            event.key === "="
+        ) {
+
+            changeZoom(
+                0.5
+            );
+
+        }
+
+        if (
+            event.key === "-"
+        ) {
+
+            changeZoom(
+                -0.5
+            );
+
+        }
+
+        if (
+            event.key === "ArrowUp"
+        ) {
+
+            moveCamera(
+                "oben"
+            );
+
+        }
+
+        if (
+            event.key === "ArrowDown"
+        ) {
+
+            moveCamera(
+                "unten"
+            );
+
+        }
+
+        if (
+            event.key === "ArrowLeft"
+        ) {
+
+            moveCamera(
+                "links"
+            );
+
+        }
+
+        if (
+            event.key === "ArrowRight"
+        ) {
+
+            moveCamera(
+                "rechts"
+            );
+
+        }
+
+    }
+);
+
+
+// ============================================================
+// START
+// ============================================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        initMap();
+
+        updateAIS();
+
+        updateCameraStatus();
+
+        setInterval(
+            updateAIS,
+            1000
+        );
+
+        setInterval(
+            updateCameraStatus,
+            2000
+        );
+
+    }
+);
 
 </script>
 
 </body>
+
 </html>
+

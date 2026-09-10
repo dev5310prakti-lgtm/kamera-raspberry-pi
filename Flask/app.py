@@ -20,16 +20,23 @@ from dotenv import load_dotenv
 load_dotenv("/home/superuser/Downloads/projekt/.env")
 
 AIS_API_KEY = os.getenv("AISSTREAM_API_KEY")
+
 AIS_URL = "wss://stream.aisstream.io/v0/stream"
 
+# Position der Kamera
 CAMERA_LAT = 53.544999
 CAMERA_LON = 9.9503613
 
+# Maximale Entfernung für Schiffe
+MAX_SHIP_DISTANCE_KM = 1.0
+
+# AIS-Bereich
 AIS_BOUNDING_BOX = [
     [53.5360, 9.9340],
     [53.5540, 9.9667]
 ]
 
+# Kamera
 CAMERA_DEVICE = "/dev/video0"
 CAMERA_WIDTH = 1280
 CAMERA_HEIGHT = 720
@@ -78,24 +85,24 @@ kamera.set(
     1
 )
 
-kamera_laeuft = True
-
 kamera_lock = threading.Lock()
 
 aktuelles_jpeg = None
+
+kamera_laeuft = True
 
 zoom = 1.0
 position_x = 0.5
 position_y = 0.5
 
 print(
-    "Kamera geÃ¶ffnet:",
+    "Kamera geöffnet:",
     kamera.isOpened()
 )
 
 
 # ============================================================
-# KAMERA FRAME VERARBEITUNG
+# KAMERA BILDVERARBEITUNG
 # ============================================================
 
 def verarbeite_kamerabild(bild):
@@ -105,6 +112,7 @@ def verarbeite_kamerabild(bild):
     global position_y
 
     with kamera_lock:
+
         aktueller_zoom = zoom
         aktuelles_x = position_x
         aktuelles_y = position_y
@@ -220,7 +228,7 @@ def kamera_thread():
         except Exception as error:
 
             print(
-                "Kamera-Verarbeitungsfehler:",
+                "Kamera-Fehler:",
                 repr(error)
             )
 
@@ -249,7 +257,7 @@ def kamera_stream():
             b"Content-Length: "
             + str(len(frame)).encode()
             + b"\r\n"
-            b"Cache-Control: no-cache\r\n"
+            b"Cache-Control: no-cache, no-store, must-revalidate\r\n"
             b"Pragma: no-cache\r\n"
             b"\r\n"
             + frame
@@ -273,7 +281,7 @@ kamera_thread_handle.start()
 
 
 # ============================================================
-# AIS DATEN
+# AIS
 # ============================================================
 
 schiffe = {}
@@ -329,7 +337,7 @@ def berechne_entfernung(
 
 
 # ============================================================
-# RICHTUNG
+# RICHTUNG / BEARING
 # ============================================================
 
 def berechne_richtung(
@@ -459,17 +467,22 @@ def verarbeite_ais_nachricht(data):
         name = f"MMSI {mmsi}"
 
     # --------------------------------------------------------
-    # SPEED
+    # SPEED OVER GROUND
     # --------------------------------------------------------
 
     speed = position.get(
-        "Sog",
-        0
+        "Sog"
     )
 
     try:
-        speed = float(speed)
+
+        if speed is None:
+            speed = 0.0
+        else:
+            speed = float(speed)
+
     except Exception:
+
         speed = 0.0
 
     # --------------------------------------------------------
@@ -483,8 +496,11 @@ def verarbeite_ais_nachricht(data):
     if course is not None:
 
         try:
+
             course = float(course)
+
         except Exception:
+
             course = None
 
     # --------------------------------------------------------
@@ -509,24 +525,154 @@ def verarbeite_ais_nachricht(data):
             heading = None
 
     # --------------------------------------------------------
+    # ZEIT
+    # --------------------------------------------------------
+
+    jetzt = time.time()
+
+    # --------------------------------------------------------
+    # ALTE POSITION
+    # --------------------------------------------------------
+
+    alte_position = None
+
+    with schiffe_lock:
+
+        if mmsi in schiffe:
+
+            alte_position = {
+                "latitude": schiffe[mmsi].get(
+                    "latitude"
+                ),
+                "longitude": schiffe[mmsi].get(
+                    "longitude"
+                ),
+                "last_seen": schiffe[mmsi].get(
+                    "last_seen"
+                )
+            }
+
+    # --------------------------------------------------------
+    # BEWEGUNG AUS POSITIONEN BERECHNEN
+    # --------------------------------------------------------
+
+    berechnete_geschwindigkeit = 0.0
+
+    position_bewegt = False
+
+    if alte_position:
+
+        alte_lat = alte_position.get(
+            "latitude"
+        )
+
+        alte_lon = alte_position.get(
+            "longitude"
+        )
+
+        alte_zeit = alte_position.get(
+            "last_seen"
+        )
+
+        if (
+            alte_lat is not None
+            and alte_lon is not None
+            and alte_zeit is not None
+        ):
+
+            zeit_diff = jetzt - alte_zeit
+
+            if (
+                zeit_diff > 1.0
+                and zeit_diff < 300
+            ):
+
+                strecke_km = berechne_entfernung(
+                    alte_lat,
+                    alte_lon,
+                    latitude,
+                    longitude
+                )
+
+                # km/h
+                kmh = (
+                    strecke_km
+                    /
+                    (zeit_diff / 3600)
+                )
+
+                # Knoten
+                berechnete_geschwindigkeit = (
+                    kmh / 1.852
+                )
+
+                # GPS/AIS-Rauschen ignorieren
+                if (
+                    strecke_km >= 0.03
+                    and berechnete_geschwindigkeit >= 0.5
+                ):
+
+                    position_bewegt = True
+
+    # --------------------------------------------------------
+    # FAHREND / STEHEND
+    # --------------------------------------------------------
+
+    moving = (
+        speed >= 0.5
+        or
+        position_bewegt
+    )
+
+    # Tatsächliche Geschwindigkeit für Anzeige
+    motion_speed = max(
+        speed,
+        berechnete_geschwindigkeit
+    )
+
+    # --------------------------------------------------------
     # SPEICHERN
     # --------------------------------------------------------
 
     with schiffe_lock:
 
         schiffe[mmsi] = {
+
             "mmsi": mmsi,
+
             "name": name,
+
             "latitude": latitude,
+
             "longitude": longitude,
-            "speed": speed,
+
+            "speed": round(
+                speed,
+                2
+            ),
+
             "speed_kmh": round(
                 speed * 1.852,
                 1
             ),
+
+            "motion_speed": round(
+                motion_speed,
+                2
+            ),
+
+            "motion_speed_kmh": round(
+                motion_speed * 1.852,
+                1
+            ),
+
             "course": course,
+
             "heading": heading,
-            "last_seen": time.time()
+
+            "moving": moving,
+
+            "last_seen": jetzt
         }
 
 
@@ -549,22 +695,22 @@ async def ais_verbindung():
             "=========================================="
         )
         print(
-            "Bitte .env prÃ¼fen:"
+            "Datei:"
         )
         print(
             "/home/superuser/Downloads/projekt/.env"
         )
+        print()
         print(
             "AISSTREAM_API_KEY=DEIN_KEY"
         )
         print(
             "=========================================="
         )
-        print()
 
-        ais_status["last_error"] = (
-            "API Key fehlt"
-        )
+        ais_status[
+            "last_error"
+        ] = "API Key fehlt"
 
         return
 
@@ -598,6 +744,7 @@ async def ais_verbindung():
                 ] = None
 
                 subscription = {
+
                     "APIKey": AIS_API_KEY,
 
                     "BoundingBoxes": [
@@ -647,7 +794,7 @@ async def ais_verbindung():
                         ):
 
                             print(
-                                "AIS Subscription bestÃ¤tigt!"
+                                "AIS Subscription bestätigt!"
                             )
 
                             continue
@@ -755,7 +902,7 @@ def home():
 
 
 # ============================================================
-# VIDEO FEED
+# VIDEO
 # ============================================================
 
 @app.route("/video_feed")
@@ -768,10 +915,41 @@ def video_feed():
             " boundary=frame"
         ),
         headers={
-            "Cache-Control": "no-cache",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
             "Pragma": "no-cache"
         }
     )
+
+
+# ============================================================
+# KAMERA STATUS
+# ============================================================
+
+@app.route("/camera_status")
+def camera_status():
+
+    with kamera_lock:
+
+        hat_bild = (
+            aktuelles_jpeg is not None
+        )
+
+        aktueller_zoom = zoom
+
+    return jsonify({
+
+        "camera_open": kamera.isOpened(),
+
+        "has_frame": hat_bild,
+
+        "zoom": aktueller_zoom,
+
+        "width": CAMERA_WIDTH,
+
+        "height": CAMERA_HEIGHT,
+
+        "fps": CAMERA_FPS
+    })
 
 
 # ============================================================
@@ -804,7 +982,7 @@ def set_zoom():
     except Exception:
 
         return jsonify({
-            "error": "UngÃ¼ltiger Zoom"
+            "error": "Ungültiger Zoom"
         }), 400
 
     zoom = max(
@@ -818,8 +996,11 @@ def set_zoom():
         position_y = 0.5
 
     return jsonify({
+
         "zoom": zoom,
+
         "x": position_x,
+
         "y": position_y
     })
 
@@ -866,7 +1047,7 @@ def move():
     else:
 
         return jsonify({
-            "error": "UngÃ¼ltige Richtung"
+            "error": "Ungültige Richtung"
         }), 400
 
     position_x = max(
@@ -880,8 +1061,11 @@ def move():
     )
 
     return jsonify({
+
         "x": position_x,
+
         "y": position_y,
+
         "zoom": zoom
     })
 
@@ -905,8 +1089,11 @@ def camera_reset():
     position_y = 0.5
 
     return jsonify({
+
         "zoom": zoom,
+
         "x": position_x,
+
         "y": position_y
     })
 
@@ -964,7 +1151,11 @@ def ships_api():
                 lon
             )
 
-            if entfernung > 1.0:
+            # ================================================
+            # NUR 1 KM UM DIE KAMERA
+            # ================================================
+
+            if entfernung > MAX_SHIP_DISTANCE_KM:
                 continue
 
             richtung = berechne_richtung(
@@ -999,31 +1190,34 @@ def ships_api():
                 1
             )
 
-            daten[
-                "moving"
-            ] = (
-                schiff["speed"]
-                >
-                0.5
-            )
-
             ausgabe.append(
                 daten
             )
 
+    # Fahrende zuerst
     ausgabe.sort(
         key=lambda x: (
-            not x["moving"],
+            not x.get("moving", False),
             x["distance_km"]
         )
     )
 
     return jsonify({
+
         "ships": ausgabe,
+
         "count": len(ausgabe),
+
         "ais_connected": ais_status[
             "connected"
-        ]
+        ],
+
+        "camera": {
+            "latitude": CAMERA_LAT,
+            "longitude": CAMERA_LON
+        },
+
+        "radius_km": MAX_SHIP_DISTANCE_KM
     })
 
 
@@ -1039,6 +1233,7 @@ def ais_status_api():
     )
 
     with schiffe_lock:
+
         status[
             "ship_count"
         ] = len(schiffe)
@@ -1066,32 +1261,6 @@ def ais_status_api():
 
 
 # ============================================================
-# KAMERA STATUS
-# ============================================================
-
-@app.route("/camera_status")
-def camera_status():
-
-    with kamera_lock:
-
-        hat_bild = (
-            aktuelles_jpeg
-            is not None
-        )
-
-        aktueller_zoom = zoom
-
-    return jsonify({
-        "camera_open": kamera.isOpened(),
-        "has_frame": hat_bild,
-        "zoom": aktueller_zoom,
-        "width": CAMERA_WIDTH,
-        "height": CAMERA_HEIGHT,
-        "fps": CAMERA_FPS
-    })
-
-
-# ============================================================
 # PROGRAMM START
 # ============================================================
 
@@ -1102,7 +1271,7 @@ if __name__ == "__main__":
         "========================================"
     )
     print(
-        "     RASPBERRY PI ELBE VISION"
+        "       RASPBERRY PI ELBE VISION"
     )
     print(
         "========================================"
@@ -1114,12 +1283,12 @@ if __name__ == "__main__":
     )
 
     print(
-        "Kamera GerÃ¤t:",
+        "Kamera Gerät:",
         CAMERA_DEVICE
     )
 
     print(
-        "AuflÃ¶sung:",
+        "Auflösung:",
         f"{CAMERA_WIDTH}x{CAMERA_HEIGHT}"
     )
 
@@ -1136,23 +1305,20 @@ if __name__ == "__main__":
     )
 
     print(
+        "AIS Radius:",
+        f"{MAX_SHIP_DISTANCE_KM} km"
+    )
+
+    print(
         "========================================"
     )
     print()
-
-    # --------------------------------------------------------
-    # AIS starten
-    # --------------------------------------------------------
 
     threading.Thread(
         target=starte_ais,
         daemon=True,
         name="AISStream"
     ).start()
-
-    # --------------------------------------------------------
-    # Flask starten
-    # --------------------------------------------------------
 
     app.run(
         host="0.0.0.0",
@@ -1161,4 +1327,3 @@ if __name__ == "__main__":
         threaded=True,
         use_reloader=False
     )
-
